@@ -1,9 +1,15 @@
 {
-    "name": "packagist_package_here",
-    "description": "and_description_here",
+    "name": "open-southeners/phpunit-todo-markdown-printer",
+    "description": "Print your failed tests as a to do list in Markdown format",
     "license": "MIT",
     "keywords": [
-        "open-southeners"
+        "open-southeners",
+        "phpunit",
+        "phpunit-logger",
+        "phpunit-extension",
+        "productivity",
+        "markdown",
+        "tests"
     ],
     "authors": [
         {
@@ -13,33 +19,24 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0|^8.1"
+        "php": ">=7.3",
+        "phpunit/phpunit": "^8.0|^9.0"
     },
     "require-dev": {
-        "nunomaduro/larastan": "^1.0",
-        "phpstan/phpstan": "^1.0",
-        "phpunit/phpunit": "^9.0",
-        "orchestra/testbench": "^6.0|^7.0"
+        "phpstan/phpstan": "^1.0"
     },
     "autoload": {
         "psr-4": {
-            "OpenSoutheners\\PhpPackage\\": "src"
+            "OpenSoutheners\\PHPUnitTodoMarkdownPrinter\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "OpenSoutheners\\PhpPackage\\Tests\\": "tests"
+            "OpenSoutheners\\PHPUnitTodoMarkdownPrinter\\Tests\\": "tests"
         }
     },
     "config": {
         "sort-packages": true
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "OpenSoutheners\\PhpPackage\\ServiceProvider"
-            ]
-        }
     },
     "minimum-stability": "dev"
 }

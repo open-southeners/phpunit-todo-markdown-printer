@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-12-21
+
+### Added
+
+- More useful info on the Markdown output
+- Ability to include skipped tests (tests that uses `$this->markedAsSkipped()`)
+
 ## [1.0.0] - 2022-12-20
 
 ### Added
 
-- Initial release! 
+- Initial release!

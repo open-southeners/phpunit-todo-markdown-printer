@@ -7,15 +7,19 @@ use PHPUnit\Framework\TestListener;
 use PHPUnit\Framework\TestSuite;
 use PHPUnit\Framework\Warning;
 use PHPUnit\Framework\Test;
-use ReflectionClass;
 use Throwable;
 
 final class Printer extends \PHPUnit\Util\Printer implements TestListener
 {
     /**
+     * @var int
+     */
+    protected $failedCount = 0;
+
+    /**
      * @var array
      */
-    protected $failedTests = [];
+    protected $failed = [];
 
     /**
      * @var boolean
@@ -28,28 +32,49 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
     protected $reportIncompleteTests;
 
     /**
+     * @var boolean
+     */
+    protected $reportSkippedTests;
+
+    /**
      * @param null|mixed $out
      * @param boolean $reportRiskyTests
      * @param boolean $reportIncompleteTests
+     * @param boolean $reportSkippedTests
      */
-    public function __construct($out = null, bool $reportRiskyTests = false, bool $reportIncompleteTests = true)
-    {
+    public function __construct(
+        $out = null,
+        bool $reportRiskyTests = false,
+        bool $reportIncompleteTests = true,
+        bool $reportSkippedTests = false
+    ) {
         parent::__construct($out);
 
         $this->reportRiskyTests = $reportRiskyTests;
         $this->reportIncompleteTests = $reportIncompleteTests;
+        $this->reportSkippedTests = $reportSkippedTests;
     }
 
     public function flush(): void
     {
-        $textContent = "**A summary of tests that failed:**\n\n";
+        $textContent = "# Failed tests\n\n";
+        $textContent .= "A summary of tests that failed. **Total of {$this->failedCount} failed within ".count($this->failed)." files**.\n\n";
 
-        foreach ($this->failedTests as $failedTest) {
-            // TODO: Need relative paths...
-            // $textContent .= "- [ ] {$failedTest['test']} at {$failedTest['filePath']}\n\n";
-            $textContent .= "- [ ] {$failedTest['test']}\n\n";
+        foreach ($this->failed as $file => $failedTests) {
+            $fileClass = explode('::', $file);
+            $fileClass = reset($fileClass);
+            $fileClass = explode('\\', $fileClass);
+            $fileClass = end($fileClass);
+            $textContent .= "## {$fileClass}\n\n";
 
-            $textContent .= "```\n".trim($failedTest['message'])."\n```\n\n";
+            foreach ($failedTests as $failedTest) {
+                $textContent .= "- [ ] {$failedTest['test']}\n\n";
+
+                $textContent .= "```\n".trim($failedTest['message'])."\n\n";
+                $textContent .= "at {$failedTest['failureAt']}\n";
+                $textContent .= "----------\n";
+                $textContent .= "{$failedTest['failureDetails']}\n```\n\n";
+            }
         }
 
         $this->write($textContent);
@@ -58,17 +83,18 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
     /**
      * Add details of failure, error or incompletion to array of failed tests.
      *
+     * @param string $file
      * @param string $test
-     * @param string $message
-     * @param string $testClass
+     * @param \Throwable $exception
      */
-    protected function addTestToFailed(string $test, string $message, string $testClass): void
+    protected function addTestToFailed(string $file, string $test, Throwable $exception): void
     {
-        $reflector = new ReflectionClass($testClass);
+        $message = $exception->getMessage();
+        $failureAt = "{$exception->getFile()}:{$exception->getLine()}";
+        $failureDetails = $exception->getTraceAsString();
 
-        $filePath = $reflector->getFileName();
-
-        $this->failedTests[] = compact('test', 'message', 'filePath');
+        $this->failedCount++;
+        $this->failed[$file][] = compact('test', 'message', 'failureDetails', 'failureAt');
     }
 
     /**
@@ -78,7 +104,7 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
      */
     public function addError(Test $test, Throwable $t, float $time): void
     {
-        $this->addTestToFailed($test->getName(), $t->getMessage(), get_class($test));
+        $this->addTestToFailed($test->toString(), $test->getName(), $t);
     }
 
     /**
@@ -88,7 +114,7 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
      */
     public function addWarning(Test $test, Warning $e, float $time): void
     {
-        $this->addTestToFailed($test->getName(), $e->getMessage(), get_class($test));
+        $this->addTestToFailed($test->toString(), $test->getName(), $e);
     }
 
     /**
@@ -98,7 +124,7 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
      */
     public function addFailure(Test $test, AssertionFailedError $e, float $time): void
     {
-        $this->addTestToFailed($test->getName(), $e->getMessage(), get_class($test));
+        $this->addTestToFailed($test->toString(), $test->getName(), $e);
     }
 
     /**
@@ -112,7 +138,7 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
             return;
         }
 
-        $this->addTestToFailed($test->getName(), $t->getMessage(), get_class($test));
+        $this->addTestToFailed($test->toString(), $test->getName(), $t);
     }
 
     /**
@@ -126,7 +152,7 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
             return;
         }
 
-        $this->addTestToFailed($test->getName(), $t->getMessage(), get_class($test));
+        $this->addTestToFailed($test->toString(), $test->getName(), $t);
     }
     
     /**
@@ -136,6 +162,11 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
      */
     public function addSkippedTest(Test $test, Throwable $t, float $time): void
     {
+        if (! $this->reportSkippedTests) {
+            return;
+        }
+
+        $this->addTestToFailed($test->toString(), $test->getName(), $t);
     }
     
     /**

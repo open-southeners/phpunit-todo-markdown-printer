@@ -154,7 +154,6 @@ final class Printer extends \PHPUnit\Util\Printer implements TestListener
     
     /**
      * @param \PHPUnit\Framework\TestCase|\PHPUnit\Framework\Test $test
-     * @param float $time
      */
     public function startTest(Test $test): void
     {

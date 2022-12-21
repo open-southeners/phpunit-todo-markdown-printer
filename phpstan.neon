@@ -6,4 +6,7 @@ parameters:
     # The level 8 is the highest level
     level: 5
 
+    ignoreErrors:
+        - '#Call to an undefined method PHPUnit\Framework\Test::getName()#'
+
     checkMissingIterableValueType: false

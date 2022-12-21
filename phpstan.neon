@@ -7,6 +7,6 @@ parameters:
     level: 5
 
     ignoreErrors:
-        - '#Call to an undefined method PHPUnit\Framework\Test::getName()#'
+        - '#Call to an undefined method PHPUnit\\Framework\\Test::#'
 
     checkMissingIterableValueType: false

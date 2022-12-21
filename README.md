@@ -32,6 +32,8 @@ And that's all you need to do, from now on your `todo_failed_tests.md` will have
 
 ## Example output
 
+### Code
+
 ````markdown
 **A summary of tests that failed:**
 
@@ -47,3 +49,19 @@ No query results for model [App\Models\User].
 No query results for model [App\Models\User].
 ```
 ````
+
+### Preview
+
+**A summary of tests that failed:**
+
+- [ ] test_workspace_editor_creates_approval
+
+```
+No query results for model [App\Models\User].
+```
+
+- [ ] test_approval_can_be_confirmed
+
+```
+No query results for model [App\Models\User].
+```
